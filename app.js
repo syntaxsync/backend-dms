@@ -3,6 +3,8 @@ const morgan = require("morgan");
 
 const app = express();
 
+app.use(express.json());
+
 if (process.env.NODE_ENV === "DEVELOPMENT") app.use(morgan("dev"));
 
 const userRoutes = require("./routes/userRoutes");
