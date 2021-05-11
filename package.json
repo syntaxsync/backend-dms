@@ -1,0 +1,21 @@
+{
+  "name": "backend-dms",
+  "version": "1.0.0",
+  "description": "Department Management System",
+  "main": "nodemon server.js",
+  "repository": "D:\\Asshir FYP\\backend-dms",
+  "author": "Aashir Hassan Riaz, Muhammad Haris Naeem",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon server.js",
+    "start:prod": "SET NODE_ENV=PRODUCTION&&nodemon server.js"
+  },
+  "dependencies": {
+    "dotenv": "^9.0.1",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7"
+  },
+  "devDependencies": {
+    "morgan": "^1.10.0"
+  }
+}
