@@ -76,6 +76,23 @@ const userSchema = new mongoose.Schema({
   verifyAccountToken: {
     type: String,
   },
+  enableTwoFactorAuth: {
+    type: Boolean,
+    default: false,
+  },
+  twoFactorAuthStatus: {
+    type: String,
+    enum: ["verified", "not-verified"],
+  },
+  twoFactorAuthToken: {
+    type: String,
+  },
+  twoFactorExpiresIn: {
+    type: Date,
+  },
+  passwordChangedAt: {
+    type: Date,
+  },
 });
 
 userSchema.pre("save", async function (next) {
@@ -96,6 +113,34 @@ userSchema.methods.createVerificationToken = function () {
     .digest("hex");
 
   return verificationToken;
+};
+
+userSchema.methods.create2FAAuthToken = function () {
+  const twoFactorToken = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+  this.twoFactorAuthToken = crypto
+    .createHash("sha256")
+    .update(twoFactorToken)
+    .digest("hex");
+
+  this.twoFactorExpiresIn = Date.now() + 5 * 60 * 1000;
+
+  return twoFactorToken;
+};
+
+userSchema.methods.validateJWTTime = function (jwtCreationTime) {
+  if (this.passwordChangedAt) {
+    const changedAt = parseInt(this.passwordChangedAt / 1000, 10);
+    return jwtCreationTime > passwordChangedAt;
+  }
+  return true;
+};
+
+userSchema.methods.comparePassword = async function (
+  candidatePassword,
+  hashedPassword
+) {
+  return await bcrypt.compare(candidatePassword, hashedPassword);
 };
 
 const User = mongoose.model("User", userSchema);
