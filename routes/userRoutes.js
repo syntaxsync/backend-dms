@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.post("/signup", authController.signup);
 
+router.get("/verifyAccount/:verifyToken", authController.verifyAccountStatus);
+
 router
   .route("/")
   .get((req, res) => {

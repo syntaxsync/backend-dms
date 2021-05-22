@@ -1,4 +1,7 @@
+const crypto = require("crypto");
+
 const mongoose = require("mongoose");
+
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
@@ -65,14 +68,35 @@ const userSchema = new mongoose.Schema({
     minLenght: 18,
     maxLength: 18,
   },
+  status: {
+    type: String,
+    enum: ["not-verified", "deactivated", "verified"],
+    default: "not-verified",
+  },
+  verifyAccountToken: {
+    type: String,
+  },
 });
 
 userSchema.pre("save", async function (next) {
+  if (!this.isModified("password") || !this.isNew) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.confirmPassword = undefined;
 
   next();
 });
+
+userSchema.methods.createVerificationToken = function () {
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+
+  // encrypting verification Token
+  this.verifyAccountToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex");
+
+  return verificationToken;
+};
 
 const User = mongoose.model("User", userSchema);
 
