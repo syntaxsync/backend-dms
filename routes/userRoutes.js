@@ -7,10 +7,14 @@ const router = express.Router();
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 
+router.post("/forgotPassword", authController.forgotPassword);
+
+router.patch("/resetPassword/:resetToken", authController.resetPassword);
+
 router.get("/verifyAccount/:verifyToken", authController.verifyAccountStatus);
 
-router.patch(
-  "/oneTimeToken",
+router.get(
+  "/oneTimeToken/:token",
   authController.protect,
   authController.checkingFor2FA,
   authController.verify2FATokenCompleted

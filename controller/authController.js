@@ -183,7 +183,7 @@ exports.checkingFor2FA = (req, res, next) => {
   const user = req.user;
   if (user.enableTwoFactorAuth) {
     if (user.twoFactorAuthStatus === "not-verified") {
-      const { token } = req.body;
+      const { token } = req.params;
       const user = req.user;
 
       verify2FAToken(token, user, res);
@@ -246,3 +246,96 @@ exports.restrictTo =
     }
     next();
   };
+
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new Error("Email not provided or invalid");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new Error("No User found with provided Email");
+    }
+
+    const resetToken = user.createResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
+
+    sendEmail(
+      [user.email],
+      "Reset Password Link",
+      `Please Click on the link to reset your password ${
+        req.protocol
+      }://${req.get(
+        "host"
+      )}/api/v1/users/resetPassword/${resetToken}. Note Link will expire in 60 minutes.`,
+      `<html>
+        <head>
+          <title>Reset Password</title>
+        </head>
+        <body>
+          <p>Please Click on the link to reset your password <a href="${
+            req.protocol
+          }://${req.get(
+        "host"
+      )}/api/v1/users/resetPassword/${resetToken}">Click here</a>.</p>
+          <small> Note Link will expire in 60 minutes.</small>
+        </body>
+      </html>`
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: "Reset Link sent to your email address",
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      message: err.message,
+    });
+  }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { resetToken } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (!resetToken || !password || !confirmPassword) {
+      throw new Error(
+        "Token is missing or invalid or required Data is missing"
+      );
+    }
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    const user = await User.findOne({ resetPasswordToken: hashedToken });
+
+    if (!user || !user.validateResetTokenExpired()) {
+      throw new Error("Token is expired or invalid");
+    }
+
+    user.password = password;
+    user.confirmPassword = confirmPassword;
+    user.resetPasswordToken = undefined;
+    user.resetTokenExpired = undefined;
+
+    await user.save();
+
+    res.status(202).json({
+      status: "success",
+      message: "Password Reset Successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      message: err.message,
+    });
+  }
+};
