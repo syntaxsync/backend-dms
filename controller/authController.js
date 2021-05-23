@@ -114,6 +114,7 @@ exports.login = async (req, res, next) => {
 
     if (user.enableTwoFactorAuth) {
       const token2FA = user.create2FAAuthToken();
+      user.twoFactorAuthStatus = "not-verified";
       await user.save({ validateBeforeSave: false });
       user.twoFactorAuthToken = undefined;
       user.twoFactorExpiresIn = undefined;
@@ -162,6 +163,8 @@ exports.protect = async (req, res, next) => {
     }
 
     if (!user.validateJWTTime(verifiedJwt.iat)) {
+      user.twoFactorAuthStatus = "not-verified";
+      await user.save({ validateBeforeSave: false });
       throw new Error("Please Login Again!!!");
     }
 
@@ -178,18 +181,22 @@ exports.protect = async (req, res, next) => {
 
 exports.checkingFor2FA = (req, res, next) => {
   const user = req.user;
+  if (user.enableTwoFactorAuth) {
+    if (user.twoFactorAuthStatus === "not-verified") {
+      const { token } = req.body;
+      const user = req.user;
+
+      verify2FAToken(token, user, res);
+    }
+  }
   next();
 };
 
-exports.verify2FAToken = async (req, res, next) => {
+const verify2FAToken = async (token, user, res) => {
   try {
-    const { token } = req.body;
-
     if (!token) {
-      throw new Error("OTP is missing");
+      throw new Error("Not authenticated, OTP is missing");
     }
-
-    const user = req.user;
 
     if (!(new Date(user.twoFactorExpiresIn) > new Date(Date.now()))) {
       throw new Error("Token Expired!!!!");
@@ -203,6 +210,7 @@ exports.verify2FAToken = async (req, res, next) => {
 
     user.twoFactorAuthToken = undefined;
     user.twoFactorExpiresIn = undefined;
+    user.twoFactorAuthStatus = "verified";
 
     await user.save({ validateBeforeSave: false });
 
@@ -218,3 +226,23 @@ exports.verify2FAToken = async (req, res, next) => {
     });
   }
 };
+
+exports.verify2FATokenCompleted = (req, res) => {
+  res.status(200).status({
+    status: "success",
+    message: "Already authenticated with two factor",
+  });
+};
+
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    const user = req.user;
+    if (!roles.includes(user.role)) {
+      return res.status(403).json({
+        status: "fail",
+        message: "restricted access",
+      });
+    }
+    next();
+  };

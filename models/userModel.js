@@ -83,6 +83,7 @@ const userSchema = new mongoose.Schema({
   twoFactorAuthStatus: {
     type: String,
     enum: ["verified", "not-verified"],
+    default: "not-verified",
   },
   twoFactorAuthToken: {
     type: String,
