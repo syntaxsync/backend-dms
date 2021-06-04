@@ -13,31 +13,23 @@ router.patch("/resetPassword/:resetToken", authController.resetPassword);
 
 router.get("/verifyAccount/:verifyToken", authController.verifyAccountStatus);
 
-router.get(
-  "/oneTimeToken/:token",
-  authController.protect,
-  authController.checkingFor2FA,
-  authController.verify2FATokenCompleted
-);
+router.use(authController.protect, authController.checkingFor2FA);
 
-router
-  .route("/")
-  .get(
-    authController.protect,
-    authController.checkingFor2FA,
-    authController.restrictTo("teacher"),
-    (req, res) => {
-      res.status(200).json({
-        status: "success",
-        message: "Users of the system",
-      });
-    }
-  )
-  .post((req, res) => {
-    res.status(201).json({
-      status: "success",
-      message: "New user created",
-    });
+router.get("/oneTimeToken/:token", authController.verify2FATokenCompleted);
+
+router.route("/").get(authController.restrictTo("teacher"), (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Users of the system",
   });
+});
+
+router.post("/upadtePassword", authController.changeMyPassword);
+
+router.patch(
+  "/updateProfilePicture",
+  authController.uploader,
+  authController.updateProfilePicture
+);
 
 module.exports = router;

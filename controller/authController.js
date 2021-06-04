@@ -1,16 +1,27 @@
 const crypto = require("crypto");
+const fs = require("fs");
+
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
 
 const User = require("../models/userModel");
-const jwt = require("jsonwebtoken");
 const sendEmail = require("../util/sendEmail");
+
+const hideInformationFromResponse = (user) => {
+  user.password = undefined;
+  user.verifyAccountToken = undefined;
+  user.passwordChangedAt = undefined;
+  user.enableTwoFactorAuth = undefined;
+  user.twoFactorAuthStatus = undefined;
+};
 
 const signToken = (id, user, statusCode, res) => {
   const token = jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-  user.password = undefined;
-  user.verifyAccountToken = undefined;
+  hideInformationFromResponse(user);
 
   res.status(statusCode).json({
     status: "success",
@@ -173,8 +184,9 @@ exports.protect = async (req, res, next) => {
     next();
   } catch (err) {
     res.status(500).json({
-      status: "success",
+      status: "fail",
       message: err.message,
+      stack: err.stack,
     });
   }
 };
@@ -323,6 +335,7 @@ exports.resetPassword = async (req, res, next) => {
 
     user.password = password;
     user.confirmPassword = confirmPassword;
+    user.passwordChangedAt = Date.now();
     user.resetPasswordToken = undefined;
     user.resetTokenExpired = undefined;
 
@@ -336,6 +349,102 @@ exports.resetPassword = async (req, res, next) => {
     res.status(500).json({
       status: "fail",
       message: err.message,
+    });
+  }
+};
+
+exports.changeMyPassword = async (req, res, next) => {
+  try {
+    const { password, newPassword, confirmNewPassword } = req.body;
+
+    if (!password || !newPassword || !confirmNewPassword) {
+      throw new Error("All fields must be provided");
+    }
+
+    const user = await User.findById(req.user.id).select("+password");
+
+    if (!(await user.comparePassword(password, user.password))) {
+      throw new Error("Password is incorrect");
+    }
+
+    user.password = newPassword;
+    user.passwordChangedAt = Date.now();
+    user.confirmPassword = confirmNewPassword;
+
+    await user.save();
+
+    signToken(user._id, user, 202, res);
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      message: err.message,
+      stack: err.stack,
+    });
+  }
+};
+
+const storage = multer.memoryStorage();
+
+const fileFilter = (req, files, cb) => {
+  if (files.mimetype.startsWith("image")) {
+    if (
+      files.mimetype.endsWith("jpg") ||
+      files.mimetype.endsWith("jpeg") ||
+      files.mimetype.endsWith("png")
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("File must be an Image with jpg, jpeg, png format"));
+    }
+  } else {
+    cb(new Error("File must be an Image"));
+  }
+};
+
+exports.uploader = multer({
+  storage,
+  fileFilter,
+}).single("profilePicture");
+
+exports.updateProfilePicture = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw new Error("Please Upload Profile Picture");
+    }
+
+    if (req.file.size > 1232896) {
+      throw new Error("File Size too large. Max 1mb will be accepted");
+    }
+
+    const ext = req.file.mimetype.split("/")[1];
+    const user = req.user;
+    const filename = `${user._id}-${Date.now()}.${ext}`;
+
+    await fs.writeFile(
+      path.resolve(`public/users/${filename}`),
+      req.file.buffer,
+      () => {
+        console.log("File uploaded");
+      }
+    );
+
+    user.profilePicture = filename;
+
+    await user.save({ validateBeforeSave: false });
+
+    hideInformationFromResponse(user);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      err: err.message,
+      stack: err.stack,
     });
   }
 };

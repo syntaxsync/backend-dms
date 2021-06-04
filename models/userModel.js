@@ -6,6 +6,10 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
+  profilePicture: {
+    type: "String",
+    default: "default.jpeg",
+  },
   role: {
     type: String,
     enum: ["student", "admin", "teacher"],
@@ -139,7 +143,7 @@ userSchema.methods.create2FAAuthToken = function () {
 userSchema.methods.validateJWTTime = function (jwtCreationTime) {
   if (this.passwordChangedAt) {
     const changedAt = parseInt(this.passwordChangedAt / 1000, 10);
-    return jwtCreationTime > passwordChangedAt;
+    return jwtCreationTime > changedAt;
   }
   return true;
 };
