@@ -13,6 +13,8 @@ router.patch("/resetPassword/:resetToken", authController.resetPassword);
 
 router.get("/verifyAccount/:verifyToken", authController.verifyAccountStatus);
 
+router.patch("/verifyRefreshToken", authController.checkingRefreshToken);
+
 router.use(authController.protect);
 
 router.get("/generateNewCode", authController.regenerate2FACode);

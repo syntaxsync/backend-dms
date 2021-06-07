@@ -17,7 +17,7 @@ const hideInformationFromResponse = (user) => {
 };
 
 const signToken = (id, user, statusCode, res) => {
-  const token = jwt.sign({ id }, process.env.JWT_SECRET, {
+  const accessToken = jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
@@ -29,7 +29,7 @@ const signToken = (id, user, statusCode, res) => {
 
   res.status(statusCode).json({
     status: "success",
-    token,
+    accessToken,
     refreshToken,
     data: {
       user,
@@ -194,7 +194,39 @@ exports.protect = async (req, res, next) => {
   } catch (err) {
     res.status(500).json({
       status: "fail",
-      message: err.message,
+      message:
+        err.name === "TokenExpiredError"
+          ? "Access Token is expired please provide Refresh Token"
+          : err.message,
+      stack: err.stack,
+    });
+  }
+};
+
+exports.checkingRefreshToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+
+    const verifiedToken = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET,
+      {
+        expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+      }
+    );
+
+    const user = await User.findById(verifiedToken.id);
+
+    if (!user) {
+      throw new Error("User Not Found", 404);
+    }
+
+    signToken(user._id, user, 200, res);
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      message:
+        err.name === "TokenExpiredError" ? "Please Login again" : err.message,
       stack: err.stack,
     });
   }
