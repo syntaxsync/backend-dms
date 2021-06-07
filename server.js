@@ -6,7 +6,10 @@ dotenv.config({ path: "./config.env" });
 const app = require("./app");
 
 const PORT = process.env.PORT || 5000;
-const DB = process.env.DATABASE;
+const DB = process.env.DATABASE.replace(
+  "<username>",
+  process.env.DATABASE_USERNAME
+).replace("<password>", process.env.DATABASE_PASSWORD);
 
 mongoose.connect(
   DB,

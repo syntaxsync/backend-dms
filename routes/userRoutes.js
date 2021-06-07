@@ -13,9 +13,17 @@ router.patch("/resetPassword/:resetToken", authController.resetPassword);
 
 router.get("/verifyAccount/:verifyToken", authController.verifyAccountStatus);
 
-router.use(authController.protect, authController.checkingFor2FA);
+router.use(authController.protect);
 
-router.get("/oneTimeToken/:token", authController.verify2FATokenCompleted);
+router.get("/generateNewCode", authController.regenerate2FACode);
+
+router.get(
+  "/oneTimeToken/:token",
+  authController.checkingFor2FA,
+  authController.verify2FATokenCompleted
+);
+
+router.use(authController.checkingFor2FA);
 
 router.route("/").get(authController.restrictTo("teacher"), (req, res) => {
   res.status(200).json({
@@ -25,6 +33,11 @@ router.route("/").get(authController.restrictTo("teacher"), (req, res) => {
 });
 
 router.post("/upadtePassword", authController.changeMyPassword);
+
+router.patch(
+  "/enableTwoFactorAuthentication",
+  authController.enableTwoFactorAuthentication
+);
 
 router.patch(
   "/updateProfilePicture",

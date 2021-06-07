@@ -21,15 +21,42 @@ const signToken = (id, user, statusCode, res) => {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+  const refreshToken = jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+  });
+
   hideInformationFromResponse(user);
 
   res.status(statusCode).json({
     status: "success",
     token,
+    refreshToken,
     data: {
       user,
     },
   });
+};
+
+const send2FACode = async (user) => {
+  const token2FA = user.create2FAAuthToken();
+  user.twoFactorAuthStatus = "not-verified";
+  await user.save({ validateBeforeSave: false });
+  user.twoFactorAuthToken = undefined;
+  user.twoFactorExpiresIn = undefined;
+  sendEmail(
+    [user.email],
+    "Two Factor Authentication Code",
+    `Your Two factor authentication code is ${token2FA}. Note this code, will expires in 5 minutes`,
+    `<html>
+          <head>
+            <title>Two Factor Authentication Code</title>
+          </head>
+          <body>
+            <p>Your Two factor authentication code is ${token2FA}.</p>
+            <small>Note this code, will expires in 5 minutes.</small>
+          </body>
+        </html>`
+  );
 };
 
 exports.signup = async (req, res, next) => {
@@ -124,25 +151,7 @@ exports.login = async (req, res, next) => {
     }
 
     if (user.enableTwoFactorAuth) {
-      const token2FA = user.create2FAAuthToken();
-      user.twoFactorAuthStatus = "not-verified";
-      await user.save({ validateBeforeSave: false });
-      user.twoFactorAuthToken = undefined;
-      user.twoFactorExpiresIn = undefined;
-      sendEmail(
-        [user.email],
-        "Two Factor Authentication Code",
-        `Your Two factor authentication code is ${token2FA}. Note this code, will expires in 5 minutes`,
-        `<html>
-          <head>
-            <title>Two Factor Authentication Code</title>
-          </head>
-          <body>
-            <p>Your Two factor authentication code is ${token2FA}.</p>
-            <small>Note this code, will expires in 5 minutes.</small>
-          </body>
-        </html>`
-      );
+      await send2FACode(user);
     }
 
     signToken(user._id, user, 200, res);
@@ -445,6 +454,55 @@ exports.updateProfilePicture = async (req, res, next) => {
       status: "fail",
       err: err.message,
       stack: err.stack,
+    });
+  }
+};
+
+exports.enableTwoFactorAuthentication = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    user.enableTwoFactorAuth =
+      req.body.enableTwoFactorAuth || user.enableTwoFactorAuth;
+
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        user,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      message: err.message,
+    });
+  }
+};
+
+exports.regenerate2FACode = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    if (!user.enableTwoFactorAuth) {
+      throw new Error("Two Factor Authentication is not enabled", 400);
+    }
+
+    if (user.twoFactorAuthStatus !== "not-verified") {
+      throw new Error("Your code is already verified", 400);
+    }
+
+    send2FACode(req.user);
+
+    res.status(200).json({
+      status: "success",
+      message: "New Code Sent to mail",
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "fail",
+      message: err.message,
     });
   }
 };
