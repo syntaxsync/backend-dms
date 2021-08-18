@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    select: false,
+    // select: false,
     minLenght: [8, "Password must be minimum 8 character Long"],
     required: true,
     validate: {
@@ -107,7 +107,8 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password") || this.isNew) {
+  console.log(this.isModified("password"), this.isNew, this);
+  if (this.isNew || this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 12);
     this.confirmPassword = undefined;
   }
@@ -136,7 +137,6 @@ userSchema.methods.create2FAAuthToken = function () {
     .digest("hex");
 
   this.twoFactorExpiresIn = Date.now() + 5 * 60 * 1000;
-
   return twoFactorToken;
 };
 
