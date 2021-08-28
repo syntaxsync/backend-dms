@@ -42,7 +42,16 @@ const signToken = (id, user, statusCode, res) => {
 const send2FACode = catchAsync(async (user) => {
   const token2FA = user.create2FAAuthToken();
   user.twoFactorAuthStatus = "not-verified";
-  await user.save({ validateBeforeSave: false });
+  await User.findByIdAndUpdate(
+    user._id,
+    {
+      twoFactorAuthStatus: user.twoFactorAuthStatus,
+      twoFactorExpiresIn: user.twoFactorExpiresIn,
+      twoFactorAuthToken: user.twoFactorAuthToken,
+    },
+    { new: true }
+  );
+  // await user.save({ validateBeforeSave: false });
   user.twoFactorAuthToken = undefined;
   user.twoFactorExpiresIn = undefined;
   await sendEmail(
