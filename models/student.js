@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const studentSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+    },
     registrationNumber: {
       type: String,
       required: [true, "Registration number is required"],
@@ -33,10 +37,10 @@ const studentSchema = new mongoose.Schema(
   }
 );
 
-// stident;
-
 // studentSchema.virtual("passedCreditHours").get(function () {
 //   return this.attemptedCreditHours - this.failedCreditHours;
 // });
 
-module.exports = studentSchema;
+const Student = mongoose.model("student", studentSchema);
+
+module.exports = Student;

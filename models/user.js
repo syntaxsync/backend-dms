@@ -1,7 +1,6 @@
 const crypto = require("crypto");
 
 const mongoose = require("mongoose");
-
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
@@ -65,12 +64,10 @@ const userSchema = new mongoose.Schema({
       message: "Confirm Password must be same as Password",
     },
   },
-  registrationNumber: {
-    type: String,
+  data: {
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
-    unique: true,
-    minLenght: 18,
-    maxLength: 18,
+    refPath: "role",
   },
   status: {
     type: String,
