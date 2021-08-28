@@ -12,6 +12,15 @@ const degreeSchema = new mongoose.Schema({
   creditHours: {
     type: Number,
     required: [true, "Credit Hours is required"],
-    // validate:
+    validate: {
+      validator: function () {
+        return this.creditHours >= 0;
+      },
+      message: "Credit Hours must be greater than 0 or equal to 0",
+    },
   },
 });
+
+const Degree = mongoose.model("Degree", degreeSchema);
+
+module.exports = Degree;
