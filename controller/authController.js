@@ -71,15 +71,14 @@ const send2FACode = catchAsync(async (user) => {
 });
 
 exports.signup = catchAsync(async (req, res, next) => {
-  const { name, email, password, confirmPassword, registrationNumber } =
-    req.body;
+  const { name, email, password, confirmPassword, role } = req.body;
 
   const user = await User.create({
     name,
     email,
     password,
     confirmPassword,
-    registrationNumber,
+    role,
   });
 
   const verificationToken = user.createVerificationToken();
@@ -139,6 +138,10 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   const user = await User.findOne({ email }).select("+password");
+
+  if (!user) {
+    return next(new AppError("User Does not Exists", 404));
+  }
 
   if (!(await user.comparePassword(password, user.password))) {
     return next(new AppError("Email or Password is incorrect", 403));

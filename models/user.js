@@ -24,16 +24,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Email must be provided"],
     unique: [true, "Email must be unique"],
-    validate: {
-      validator: function () {
-        if (validator.isEmail(this.email)) {
-          const emailDomain = this.email.split("@")[1];
-          return emailDomain === process.env.EMAIL_DOMAIN;
-        }
-        return false;
-      },
-      message: `Email is not valid and domain name must include ${process.env.EMAIL_DOMAIN}`,
-    },
+    validate: [validator.isEmail, "Email is invalid"],
   },
   password: {
     type: String,
@@ -66,7 +57,6 @@ const userSchema = new mongoose.Schema({
   },
   data: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
     refPath: "role",
   },
   status: {
@@ -104,7 +94,6 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function (next) {
-  console.log(this.isModified("password"), this.isNew, this);
   if (this.isNew || this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 12);
     this.confirmPassword = undefined;
