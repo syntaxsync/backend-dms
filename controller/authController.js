@@ -82,6 +82,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 
   const verificationToken = user.createVerificationToken();
+
   await user.save({ validateBeforeSave: false });
 
   await sendEmail(
@@ -102,7 +103,7 @@ exports.signup = catchAsync(async (req, res, next) => {
           </html>`
   );
 
-  signToken(user._id, user, 201, res);
+  signToken(user._id, user, 200, res);
 });
 
 exports.verifyAccountStatus = catchAsync(async (req, res, next) => {
@@ -289,11 +290,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
           <title>Reset Password</title>
         </head>
         <body>
-          <p>Please Click on the link to reset your password <a href="${
-            req.protocol
-          }://${req.get(
-      "host"
-    )}/api/v1/users/resetPassword/${resetToken}">Click here</a>.</p>
+          <p>Please Click on the link to reset your password
+          <a href="${process.env.RESET_PASSWORD_REDIRECT_URL}/${resetToken}">Click here</a>.
+          </p>
           <small> Note Link will expire in 60 minutes.</small>
         </body>
       </html>`
