@@ -1,6 +1,7 @@
 const express = require("express");
 
 const authController = require("../controller/authController");
+const { protect } = require("../middleware/protect");
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.get("/verifyAccount/:verifyToken", authController.verifyAccountStatus);
 
 router.patch("/verifyRefreshToken", authController.checkingRefreshToken);
 
-router.use(authController.protect);
+router.use(protect);
 
 router.get("/generateNewCode", authController.regenerate2FACode);
 
@@ -26,13 +27,6 @@ router.get(
 );
 
 router.use(authController.checkingFor2FA);
-
-router.route("/").get(authController.restrictTo("teacher"), (req, res) => {
-  res.status(200).json({
-    status: "success",
-    message: "Users of the system",
-  });
-});
 
 router.post("/upadtePassword", authController.changeMyPassword);
 

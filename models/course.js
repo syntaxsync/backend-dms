@@ -9,7 +9,7 @@ const courseSchema = new mongoose.Schema({
     type: String,
     required: [true, "Course Code is required"],
   },
-  creditHour: {
+  creditHours: {
     type: Number,
     required: [true, "Credit Hour is Required"],
   },
@@ -24,6 +24,11 @@ const courseSchema = new mongoose.Schema({
     enum: ["General", "Elective", "Core"],
     required: [true, "Course Category is required"],
   },
+});
+
+courseSchema.pre(/^find/, function (next) {
+  this.populate("prerequisites");
+  next();
 });
 
 const Course = mongoose.model("Course", courseSchema);

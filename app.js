@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const globalErrorHandler = require("./controller/errorController");
 const userRoutes = require("./routes/userRoutes");
+const courseRoutes = require("./routes/courseRoutes");
 const AppError = require("./util/appError");
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(cors());
 if (process.env.NODE_ENV === "DEVELOPMENT") app.use(morgan("dev"));
 
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/courses", courseRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
