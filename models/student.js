@@ -13,6 +13,12 @@ const studentSchema = new mongoose.Schema(
       type: String,
       required: [true, "Batch is required"],
     },
+    currentSemester: {
+      type: Number,
+      required: [true, "Current semester is required"],
+      max: 12,
+      min: 1,
+    },
     courses: [
       new mongoose.Schema({
         status: {

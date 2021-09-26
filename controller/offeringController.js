@@ -37,6 +37,7 @@ exports.getAllOfferings = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
+    result: offerings.length,
     data: {
       offerings,
     },

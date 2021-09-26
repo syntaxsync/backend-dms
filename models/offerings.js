@@ -2,9 +2,10 @@ const mongoose = require("mongoose");
 
 const SemesterOfferingSchema = new mongoose.Schema({
   semester: {
-    type: String,
+    type: Number,
     required: [true, "Semester is required"],
     unique: [true, "Semester already exists"],
+    max: [12, "Semester cannot be more than 12"],
   },
   courses: [
     {
