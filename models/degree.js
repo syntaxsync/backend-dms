@@ -8,6 +8,7 @@ const degreeSchema = new mongoose.Schema({
   code: {
     type: String,
     required: [true, "Degree Code is required"],
+    unique: [true, "Degree Code must be unique"],
   },
   creditHours: {
     type: Number,
