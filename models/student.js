@@ -5,6 +5,7 @@ const studentSchema = new mongoose.Schema(
     registrationNumber: {
       type: String,
       required: [true, "Registration number is required"],
+      unique: [true, "Registration number already exists"],
       min: 6,
       max: 20,
     },
@@ -32,10 +33,6 @@ const studentSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
-// studentSchema.virtual("passedCreditHours").get(function () {
-//   return this.attemptedCreditHours - this.failedCreditHours;
-// });
 
 const Student = mongoose.model("student", studentSchema);
 

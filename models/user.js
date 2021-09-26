@@ -93,6 +93,13 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+userSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "data",
+  });
+  next();
+});
+
 userSchema.pre("save", async function (next) {
   if (this.isNew || this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 12);

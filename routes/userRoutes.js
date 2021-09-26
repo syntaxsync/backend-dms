@@ -1,6 +1,7 @@
 const express = require("express");
 
 const authController = require("../controller/authController");
+const completeProfileController = require("../controller/completeProfileComplete");
 const { protect } = require("../middleware/protect");
 
 const router = express.Router();
@@ -17,6 +18,8 @@ router.get("/verifyAccount/:verifyToken", authController.verifyAccountStatus);
 router.patch("/verifyRefreshToken", authController.checkingRefreshToken);
 
 router.use(protect);
+
+router.post("/complete-profile", completeProfileController.completeProfile);
 
 router.get("/generateNewCode", authController.regenerate2FACode);
 

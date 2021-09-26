@@ -10,6 +10,12 @@ const degreeSchema = new mongoose.Schema({
     required: [true, "Degree Code is required"],
     unique: [true, "Degree Code must be unique"],
   },
+  course: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
   creditHours: {
     type: Number,
     required: [true, "Credit Hours is required"],
