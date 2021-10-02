@@ -9,6 +9,7 @@ const User = require("../models/user");
 const sendEmail = require("../util/sendEmail");
 const catchAsync = require("../util/catchAsync");
 const AppError = require("../util/appError");
+const { uploadFileToBucket } = require("../util/uploadFile");
 
 const hideInformationFromResponse = (user) => {
   user.password = undefined;
@@ -363,15 +364,9 @@ exports.updateProfilePicture = catchAsync(async (req, res, next) => {
   const user = req.user;
   const filename = `${user._id}-${Date.now()}.${ext}`;
 
-  await fs.writeFile(
-    path.resolve(`public/users/${filename}`),
-    req.file.buffer,
-    () => {
-      console.log("File uploaded");
-    }
-  );
+  const url = await uploadFileToBucket(req.file.buffer, `users/${filename}`);
 
-  user.profilePicture = filename;
+  user.profilePicture = url;
 
   await user.save({ validateBeforeSave: false });
 

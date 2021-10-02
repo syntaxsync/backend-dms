@@ -30,20 +30,31 @@ const joiningCourse = new mongoose.Schema({
     max: [12, "Semester cannot be more than 12"],
   },
   courses: [CourseResultSchema],
+  status: {
+    type: String,
+    enum: ["Pending", "Approved", "Rejected"],
+    default: "Pending",
+  },
 });
 
 const JoiningSchema = new mongoose.Schema({
-  studentId: {
+  student: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Student",
     required: [true, "Student ID is required"],
+    unique: [true, "Student already registed"],
+  },
+  degree: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Degree",
+    required: [true, "Degree ID is required"],
   },
   courses: [joiningCourse],
 });
 
 JoiningSchema.pre(/^find/, function (next) {
   this.populate({
-    path: "studentId",
+    path: "student",
   });
 
   next();

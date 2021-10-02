@@ -62,3 +62,24 @@ exports.deleteJoining = catchAsync(async (req, res, next) => {
     data: joining,
   });
 });
+
+exports.createJoining = catchAsync(async (req, res, next) => {
+  const { _id: degree } = req.degree;
+  const { _id: student } = req.user;
+
+  const { courses } = req.body;
+  if (!courses) {
+    return next(new AppError("No courses Provided", 404));
+  }
+
+  const joining = await Joining.create({
+    degree,
+    student,
+    courses,
+  });
+
+  res.status(201).json({
+    status: "success",
+    data: { joining },
+  });
+});
