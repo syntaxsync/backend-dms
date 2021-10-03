@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const studentSchema = new mongoose.Schema(
   {
+    degree: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true, "Degree is required"],
+      ref: "Degree",
+    },
     registrationNumber: {
       type: String,
       required: [true, "Registration number is required"],
@@ -39,6 +44,14 @@ const studentSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+studentSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "degree",
+  });
+
+  next();
+});
 
 const Student = mongoose.model("student", studentSchema);
 
