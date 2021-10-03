@@ -28,6 +28,16 @@ const degreeSchema = new mongoose.Schema({
   },
 });
 
+degreeSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "course",
+  });
+
+  next();
+});
+
+degreeSchema.virtual;
+
 const Degree = mongoose.model("Degree", degreeSchema);
 
 module.exports = Degree;
