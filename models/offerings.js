@@ -17,14 +17,6 @@ const SemesterOfferingSchema = new mongoose.Schema({
   ],
 });
 
-SemesterOfferingSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "courses",
-  });
-
-  next();
-});
-
 const OfferingsSchema = new mongoose.Schema({
   semester: {
     type: String,
@@ -48,7 +40,9 @@ const OfferingsSchema = new mongoose.Schema({
 OfferingsSchema.pre(/^find/, function (next) {
   this.populate({
     path: "degree",
-    select: "code title",
+    select: "title",
+  }).populate({
+    path: "offerings.courses",
   });
 
   next();
