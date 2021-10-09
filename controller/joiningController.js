@@ -1,5 +1,6 @@
 const catchAsync = require("../util/catchAsync");
 const Joining = require("../models/joining");
+const Offerings = require("../models/offerings");
 const AppError = require("../util/appError");
 
 exports.getAllJoinings = catchAsync(async (req, res, next) => {
@@ -67,15 +68,28 @@ exports.createJoining = catchAsync(async (req, res, next) => {
   const { _id: degree } = req.degree;
   const { _id: student } = req.user;
 
-  const { courses } = req.body;
-  if (!courses) {
+  const { courses, semester, batch } = req.body;
+  if (!courses || !semester || !batch) {
     return next(new AppError("No courses Provided", 404));
+  }
+
+  const offerings = await Offerings.findOne({
+    degree,
+    courses,
+    semester,
+    batch,
+  });
+
+  if (!offerings) {
+    return next(new AppError("No offerings found", 404));
   }
 
   const joining = await Joining.create({
     degree,
     student,
     courses,
+    semester,
+    batch,
   });
 
   res.status(201).json({

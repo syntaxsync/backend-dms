@@ -46,16 +46,26 @@ exports.getAllOfferings = catchAsync(async (req, res, next) => {
 
 exports.createNewOfferings = catchAsync(async (req, res, next) => {
   const { _id: degree } = req.degree;
-  const { offerings, year, semester } = req.body;
+  const { batch, courses, semester } = req.body;
 
-  if (!offerings) {
+  if (!courses) {
     return next(new AppError("No offerings provided", 400));
   }
 
-  const newOffering = await Offerings.create({
-    offerings,
+  const offerings = await Offerings.findOne({
     degree,
-    year,
+    batch,
+    semester,
+  });
+
+  if (offerings) {
+    return next(new AppError("Offerings already exists", 400));
+  }
+
+  const newOffering = await Offerings.create({
+    courses,
+    degree,
+    batch,
     semester,
   });
 

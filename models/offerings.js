@@ -1,11 +1,18 @@
 const mongoose = require("mongoose");
 
-const SemesterOfferingSchema = new mongoose.Schema({
+const OfferingsSchema = new mongoose.Schema({
   semester: {
-    type: Number,
-    required: [true, "Semester is required"],
-    unique: [true, "Semester already exists"],
-    max: [12, "Semester cannot be more than 12"],
+    type: String,
+    required: [true, "Semster is required"],
+  },
+  batch: {
+    type: String,
+    required: [true, "batch is required"],
+  },
+  degree: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: [true, "Degree is required"],
+    ref: "Degree",
   },
   courses: [
     {
@@ -17,32 +24,12 @@ const SemesterOfferingSchema = new mongoose.Schema({
   ],
 });
 
-const OfferingsSchema = new mongoose.Schema({
-  semester: {
-    type: String,
-    required: [true, "Semster is required"],
-    enum: ["fall", "spring", "summer"],
-  },
-  year: {
-    type: Number,
-    required: [true, "Year is required"],
-    min: [2000, "Year must be greater than 1900"],
-  },
-  degree: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: [true, "Degree is required"],
-    ref: "Degree",
-    unique: [true, "Degree Offerings already exists"],
-  },
-  offerings: [SemesterOfferingSchema],
-});
-
 OfferingsSchema.pre(/^find/, function (next) {
   this.populate({
     path: "degree",
     select: "title",
   }).populate({
-    path: "offerings.courses",
+    path: "courses",
   });
 
   next();
