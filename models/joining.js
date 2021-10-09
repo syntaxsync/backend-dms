@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const JoiningSchema = new mongoose.Schema({
+  challanPhoto: {
+    type: String,
+    required: [true, "Challan photo is required"],
+  },
   student: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Student",

@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/protect");
+const { protect, restrictTo } = require("../middleware/protect");
 const joiningController = require("../controller/joiningController");
 const offeringController = require("../controller/offeringController");
 
@@ -13,9 +13,21 @@ router.route("/:joiningId").get(joiningController.getJoining);
 
 router.use(protect);
 
+router.route(
+  "/:joiningId/update-status/:status",
+  restrictTo("admin"),
+  joiningController.changeStatusOfJoining
+);
+
+router.use(restrictTo("student"));
+
 router
   .route("/")
-  .post(offeringController.getDegreeData, joiningController.createJoining);
+  .post(
+    joiningController.uploader,
+    offeringController.getDegreeData,
+    joiningController.createJoining
+  );
 
 router.route("/:joiningId").delete(joiningController.deleteJoining);
 
