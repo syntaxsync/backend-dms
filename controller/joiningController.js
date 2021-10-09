@@ -5,6 +5,7 @@ const Joining = require("../models/joining");
 const Offerings = require("../models/offerings");
 const AppError = require("../util/appError");
 const { uploadFileToBucket } = require("../util/uploadFile");
+const sendEmail = require("../util/sendEmail");
 
 const storage = multer.memoryStorage();
 
@@ -139,6 +140,7 @@ exports.createJoining = catchAsync(async (req, res, next) => {
 exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
   const { _id: degree } = req.degree;
   const { joiningId, status } = req.params;
+  const { email } = req.user;
 
   if (!joiningId) {
     return next(new AppError("No joining ID", 404));
@@ -164,6 +166,13 @@ exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
   if (!joining) {
     return next(new AppError("No joining found with that id", 404));
   }
+
+  sendEmail(
+    email,
+    "Your Joining Status has been changed",
+    `Your Joining Status has been changed to ${status}`,
+    `Your Joining Status has been changed to ${status}`
+  );
 
   res.status(200).json({
     status: "success",
