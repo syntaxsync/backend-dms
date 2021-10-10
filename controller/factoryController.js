@@ -47,7 +47,7 @@ exports.getOneBySlug = (Model) =>
 
 exports.getOneByFeild = (Model) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findOne({ [req.params.feild]: req.params.value });
+    const doc = await Model.findOne(req.params);
 
     if (!doc) {
       return next(new AppError("doc not found", 404));
