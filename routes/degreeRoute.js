@@ -12,7 +12,7 @@ router.use("/:degreeId/joining", joiningRoutes);
 
 router.route("/").get(factoryController.getAll(Degree));
 
-router.route("/:id").get(factoryController.getOne(Degree));
+router.route("/:code").get(factoryController.getOneByFeild(Degree));
 
 router.use(protect, restrictTo("admin"));
 

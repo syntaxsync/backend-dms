@@ -45,6 +45,20 @@ exports.getOneBySlug = (Model) =>
     });
   });
 
+exports.getOneByFeild = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await Model.findOne({ [req.params.feild]: req.params.value });
+
+    if (!doc) {
+      return next(new AppError("doc not found", 404));
+    }
+
+    res.status(200).json({
+      status: "Success",
+      data: { doc },
+    });
+  });
+
 exports.getOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findById(req.params.id);
