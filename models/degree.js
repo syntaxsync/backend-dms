@@ -30,7 +30,7 @@ const degreeSchema = new mongoose.Schema({
 
 degreeSchema.pre(/^find/, function (next) {
   this.populate({
-    path: "course",
+    path: "courses",
   });
 
   next();
