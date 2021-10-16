@@ -10,7 +10,7 @@ const degreeSchema = new mongoose.Schema({
     required: [true, "Degree Code is required"],
     unique: [true, "Degree Code must be unique"],
   },
-  course: [
+  courses: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
