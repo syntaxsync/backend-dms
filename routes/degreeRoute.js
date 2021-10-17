@@ -8,7 +8,7 @@ const { protect, restrictTo } = require("../middleware/protect");
 const router = express.Router();
 
 router.use("/:degreeId/offerings", offeringsRoutes);
-router.use("/:degreeId/joining", joiningRoutes);
+router.use("/:degreeId/joinings", joiningRoutes);
 
 router.route("/").get(factoryController.getAll(Degree));
 
