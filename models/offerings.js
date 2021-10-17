@@ -24,10 +24,20 @@ const OfferingsSchema = new mongoose.Schema({
   ],
 });
 
-OfferingsSchema.pre(/^find/, function (next) {
+OfferingsSchema.pre("find", function (next) {
   this.populate({
     path: "degree",
     select: "title",
+  }).populate({
+    path: "courses",
+  });
+
+  next();
+});
+
+OfferingsSchema.pre("findOne", function (next) {
+  this.populate({
+    path: "degree",
   }).populate({
     path: "courses",
   });
