@@ -18,7 +18,6 @@ const OfferingsSchema = new mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       required: [true, "Offering is required"],
-      unique: [true, "Course already offered"],
       ref: "Course",
     },
   ],
