@@ -162,7 +162,6 @@ exports.createJoining = catchAsync(async (req, res, next) => {
 });
 
 exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
-  const { _id: degree } = req.degree;
   const { joiningId, status } = req.params;
   const { email } = req.user;
 
