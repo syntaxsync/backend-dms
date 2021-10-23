@@ -5,12 +5,13 @@ const Student = require("../models/student");
 
 exports.completeProfile = catchAsync(async (req, res) => {
   role = req.user.role;
-  const { employeeId, designation, registrationNumber, batch } = req.body;
+  const { employeeId, designation, registrationNumber, batch, degree } =
+    req.body;
 
   let newUser;
 
   if (role === "student") {
-    newUser = await Student.create({ registrationNumber, batch });
+    newUser = await Student.create({ registrationNumber, batch, degree });
   } else if (role === "teacher") {
     newUser = await Teacher.create({ employeeId, designation });
   }
