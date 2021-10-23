@@ -33,6 +33,8 @@ exports.completeProfile = catchAsync(async (req, res) => {
     { new: true }
   );
 
+  newUser.password = undefined;
+
   res.status(200).json({
     status: "success",
     data: {
