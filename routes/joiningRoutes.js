@@ -13,11 +13,9 @@ router.route("/:joiningId").get(joiningController.getJoining);
 
 router.use(protect);
 
-router.route(
-  "/:joiningId/update-status/:status",
-  restrictTo("admin"),
-  joiningController.changeStatusOfJoining
-);
+router
+  .route("/:joiningId/update-status/:status")
+  .patch(restrictTo("admin"), joiningController.changeStatusOfJoining);
 
 router.use(restrictTo("student"));
 
