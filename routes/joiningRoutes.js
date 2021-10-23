@@ -15,7 +15,11 @@ router.use(protect);
 
 router
   .route("/:joiningId/update-status/:status")
-  .patch(restrictTo("admin"), joiningController.changeStatusOfJoining);
+  .patch(
+    restrictTo("admin"),
+    offeringController.getDegreeData,
+    joiningController.changeStatusOfJoining
+  );
 
 router.use(restrictTo("student"));
 

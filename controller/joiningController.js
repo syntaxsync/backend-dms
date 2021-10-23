@@ -129,7 +129,6 @@ exports.createJoining = catchAsync(async (req, res, next) => {
   }
 
   const url = await uploadFileToBucket(req.file.buffer, `challans/${filename}`);
-  console.log(student);
 
   const joining = await Joining.findOneAndUpdate(
     {
@@ -174,10 +173,8 @@ exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
   if (!status || (status !== "Approved" && status !== "Rejected")) {
     return next(new AppError("Invalid status", 400));
   }
-
-  const joining = await Joining.findOneAndUpdate(
+  const joining = await Joining.findByIdAndUpdate(
     {
-      degree,
       _id: joiningId,
     },
     {
@@ -195,7 +192,7 @@ exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
   }
 
   sendEmail(
-    email,
+    [email],
     "Your Joining Status has been changed",
     `Your Joining Status has been changed to ${status}`,
     `Your Joining Status has been changed to ${status}`
