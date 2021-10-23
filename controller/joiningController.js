@@ -33,12 +33,16 @@ exports.uploader = multer({
 exports.getAllJoinings = catchAsync(async (req, res, next) => {
   const { _id: degree } = req.degree;
 
-  const joinings = await Joining.find({ degree });
+  const joinings = await Joining.find({
+    degree,
+  });
 
   res.status(200).json({
     status: "success",
     results: joinings.length,
-    data: { joinings },
+    data: {
+      joinings,
+    },
   });
 });
 
@@ -61,7 +65,9 @@ exports.getJoining = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: { joining },
+    data: {
+      joining,
+    },
   });
 });
 
@@ -78,7 +84,9 @@ exports.deleteJoining = catchAsync(async (req, res, next) => {
       degree,
       _id: joiningId,
     },
-    { returnOriginal: true }
+    {
+      returnOriginal: true,
+    }
   );
 
   if (!joining) {
@@ -95,7 +103,8 @@ exports.createJoining = catchAsync(async (req, res, next) => {
   const { _id: degree } = req.degree;
   const { _id: student } = req.user;
 
-  const { courses, semester, batch } = req.body;
+  const { semester, batch } = req.body;
+  const courses = req.body.courses.split(",");
 
   if (!courses || !semester || !batch) {
     return next(new AppError("No courses Provided", 404));
@@ -111,7 +120,6 @@ exports.createJoining = catchAsync(async (req, res, next) => {
 
   const offerings = await Offerings.findOne({
     degree,
-    courses,
     semester,
     batch,
   });
@@ -121,19 +129,36 @@ exports.createJoining = catchAsync(async (req, res, next) => {
   }
 
   const url = await uploadFileToBucket(req.file.buffer, `challans/${filename}`);
+  console.log(student);
 
-  const joining = await Joining.create({
-    degree,
-    student,
-    courses,
-    semester,
-    batch,
-    challanPhoto: url,
-  });
+  const joining = await Joining.findOneAndUpdate(
+    {
+      degree,
+      student,
+      batch,
+      semester,
+    },
+    {
+      degree,
+      student,
+      courses,
+      semester,
+      batch,
+      challanPhoto: url,
+    },
+    {
+      new: true,
+      upsert: true,
+    }
+  );
+
+  joining.student.password = undefined;
 
   res.status(201).json({
     status: "success",
-    data: { joining },
+    data: {
+      joining,
+    },
   });
 });
 
@@ -160,7 +185,9 @@ exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
         status,
       },
     },
-    { new: true }
+    {
+      new: true,
+    }
   );
 
   if (!joining) {
@@ -176,6 +203,8 @@ exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: { joining },
+    data: {
+      joining,
+    },
   });
 });

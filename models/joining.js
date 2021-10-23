@@ -7,9 +7,8 @@ const JoiningSchema = new mongoose.Schema({
   },
   student: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Student",
+    ref: "User",
     required: [true, "Student ID is required"],
-    unique: [true, "Student already registed"],
   },
   semester: {
     type: String,
