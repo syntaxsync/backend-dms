@@ -146,8 +146,8 @@ exports.createJoining = catchAsync(async (req, res, next) => {
       challanPhoto: url,
     },
     {
-      new: true,
       upsert: true,
+      new: true,
     }
   );
 
