@@ -1,8 +1,11 @@
 const express = require("express");
 
 const authController = require("../controller/authController");
+const {
+  getJoiningsForCurrentProfile,
+} = require("../controller/joiningController");
 const completeProfileController = require("../controller/completeProfileComplete");
-const { protect } = require("../middleware/protect");
+const { protect, restrictTo } = require("../middleware/protect");
 
 const router = express.Router();
 
@@ -43,5 +46,9 @@ router.patch(
   authController.uploader,
   authController.updateProfilePicture
 );
+
+router
+  .route("/my-joinings")
+  .get(restrictTo("student"), getJoiningsForCurrentProfile);
 
 module.exports = router;

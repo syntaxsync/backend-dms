@@ -161,6 +161,20 @@ exports.createJoining = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getJoiningsForCurrentProfile = catchAsync(async (req, res, next) => {
+  const { _id: student } = req.user;
+
+  const joinings = await Joining.find({ student });
+
+  res.status(200).json({
+    status: "success",
+    results: joinings.length,
+    data: {
+      joinings,
+    },
+  });
+});
+
 exports.changeStatusOfJoining = catchAsync(async (req, res, next) => {
   const { joiningId, status } = req.params;
   const { email } = req.user;
